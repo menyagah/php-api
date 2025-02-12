@@ -1,1 +1,0 @@
-ALTER TABLE reservations ADD ownerId VARCHAR(255) NOT NULL;

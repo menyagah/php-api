@@ -1,1 +1,0 @@
-CREATE INDEX cancelled_at_idx ON reservations (cancelledAt);

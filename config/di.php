@@ -1,4 +1,4 @@
-<?php // config/di.php
+<?php
 
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Tools\DsnParser;
@@ -17,9 +17,6 @@ $container->delegate(new ReflectionContainer(true));
 # Settings
 $settings = require_once __DIR__ . '/settings.php';
 $container->add('settings', new ArrayArgument($settings));
-$container->add('maintenance_mode', function() use ($settings) {
-    return $settings['app']['maintenance_mode'] === 'true';
-});
 
 # Services
 $container->addShared(EntityManagerInterface::class, function() use ($settings) : EntityManagerInterface {
@@ -37,17 +34,6 @@ $container->addShared(EntityManagerInterface::class, function() use ($settings) 
         config: $config
     );
     return new EntityManager($connection, $config);
-});
-
-$container->addShared(\App\Repository\ReservationRepository::class, function () use ($container) {
-    $entityManager = $container->get(EntityManagerInterface::class);
-
-    return $entityManager->getRepository(\App\Entity\Reservation::class);
-});
-
-$container->addShared(\App\Repository\FlightRepository::class, function () use ($container) {
-    $entityManager = $container->get(EntityManagerInterface::class);
-    return $entityManager->getRepository(\App\Entity\Flight::class);
 });
 
 $container->add(\Symfony\Component\Serializer\SerializerInterface::class, function() {
@@ -72,27 +58,6 @@ $container->add(\Symfony\Component\Serializer\SerializerInterface::class, functi
 
     return new \Symfony\Component\Serializer\Serializer($normalizers, $encoders);
 });
-
-$container->addShared(\App\Serializer\Serializer::class)
-    ->addArguments([\Symfony\Component\Serializer\SerializerInterface::class]);
-
-$container->add(\Symfony\Component\Validator\Validator\ValidatorInterface::class, function () {
-    return \Symfony\Component\Validator\Validation::createValidatorBuilder()
-        ->enableAttributeMapping()
-        ->getValidator();
-});
-
-$container->add(\Psr\Log\LoggerInterface::class, function() use ($settings) {
-    $logger = new \Monolog\Logger($settings['log']['name']);
-    $streamHandler = new \Monolog\Handler\StreamHandler(
-        $settings['log']['file'],
-        \Monolog\Level::fromName($settings['log']['level'])
-    );
-    $logger->pushHandler($streamHandler);
-    return $logger;
-});
-
-$container->add(\Symfony\Contracts\Cache\CacheInterface::class, \Symfony\Component\Cache\Adapter\FilesystemAdapter::class);
 
 return $container;
 
