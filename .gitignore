@@ -1,0 +1,6 @@
+/vendor
+.idea
+notes.txt
+/var
+private.pem
+public.pem
